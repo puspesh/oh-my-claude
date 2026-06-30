@@ -100,3 +100,7 @@ These skills are sourced from [mattpocock/skills](https://github.com/mattpocock/
 `codebase-design`. Several are dependencies of others: `grill-me` and `grill-with-docs`
 invoke `/grilling`; `grill-with-docs` also invokes `/domain-modeling`; `tdd` references
 `/codebase-design`.
+
+`thermo-nuclear-code-quality-review` is from
+[cursor/plugins](https://github.com/cursor/plugins/tree/main/cursor-team-kit/skills/thermo-nuclear-code-quality-review)
+(cursor-team-kit). That repo ships no explicit license; included here for personal use.
