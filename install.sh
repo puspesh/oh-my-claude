@@ -57,9 +57,12 @@ copy_file() { # $1 = filename at repo root
 
 copy_dir() { # $1 = dir name
   backup "$1"
-  if [ "$DRY" = 1 ]; then say "  would sync     $1/"; return 0; fi
-  mkdir -p "$CLAUDE_DIR/$1"; rsync -a "${EXCL[@]}" "$REPO_DIR/$1/" "$CLAUDE_DIR/$1/"
-  say "  synced         $1/"
+  if [ "$DRY" = 1 ]; then say "  would mirror   $1/"; return 0; fi
+  # --delete makes ~/.claude/<dir> mirror the repo (cleans stale files from
+  # replaced skills). Excluded paths (.venv, arcane-out, .env) are protected
+  # from deletion by rsync. The pre-sync backup above is the safety net.
+  mkdir -p "$CLAUDE_DIR/$1"; rsync -a --delete "${EXCL[@]}" "$REPO_DIR/$1/" "$CLAUDE_DIR/$1/"
+  say "  mirrored       $1/"
 }
 
 enable_plugin() { # turn on the plugin in the freshly-copied settings.json
@@ -74,7 +77,8 @@ PY
   say "  enabled        plugin $PLUGIN_ID"
 }
 
-say "Installing Claude config -> $CLAUDE_DIR   [mode: $MODE]${DRY:+ (dry run)}"
+DRYLABEL=""; [ "$DRY" = 1 ] && DRYLABEL=" (dry run)"
+say "Installing Claude config -> $CLAUDE_DIR   [mode: $MODE]$DRYLABEL"
 mkdir -p "$CLAUDE_DIR"
 copy_file CLAUDE.md
 copy_file settings.json
