@@ -1,11 +1,16 @@
-# Secrets
+# Secrets — never commit
 .env
-
-# Generated images + their manifest land in the consuming project's cwd by default,
-# but ignore any that get produced inside this repo during testing.
-arcane-out/
+**/.env
 
 # Python
 __pycache__/
 *.pyc
 .venv/
+**/.venv/
+
+# Generated image output (arcane / teach skills)
+arcane-out/
+**/arcane-out/
+
+# OS noise
+.DS_Store

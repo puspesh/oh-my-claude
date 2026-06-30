@@ -1,0 +1,8 @@
+{
+  "name": "oh-my-claude",
+  "description": "Puspesh's personal Claude toolkit: skills, subagents, and commands.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Puspesh"
+  }
+}

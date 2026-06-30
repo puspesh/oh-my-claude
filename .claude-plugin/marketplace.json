@@ -1,0 +1,21 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "oh-my-claude",
+  "version": "1.0.0",
+  "owner": {
+    "name": "Puspesh",
+    "email": "krpuspesh@gmail.com"
+  },
+  "plugins": [
+    {
+      "name": "oh-my-claude",
+      "description": "Puspesh's personal Claude toolkit: skills, subagents, and commands.",
+      "version": "1.0.0",
+      "author": {
+        "name": "Puspesh"
+      },
+      "source": "./",
+      "category": "Development"
+    }
+  ]
+}

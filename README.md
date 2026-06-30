@@ -1,56 +1,102 @@
-# arcane-claude-arts
+# oh-my-claude
 
-Generate a standalone image from a **prompt** (what to draw) and a **style** (the look
-to follow), via Google Gemini Nano Banana 2 or OpenAI GPT Image 2.
+My portable Claude Code configuration — the source of truth for `~/.claude` across
+all my devices and workspaces. It works two ways:
 
-Lifted out of the `/teach` lesson image pipeline and decoupled from HTML: there is no
-lesson scanning and no `<img>` injection here — you pass the prompt and style directly.
+1. **As a config repo** — clone it, run `install.sh`, and my global rules, skills,
+   subagents, and commands land in `~/.claude`.
+2. **As a plugin marketplace** — `/plugin marketplace add` + `/plugin install` pulls
+   the same skills into any machine or teammate's setup.
 
-## Setup
+Both paths ship in this repo; you pick **one per machine** (they're mutually exclusive
+so you never get duplicate skills).
+
+## What's tracked
+
+| Path                          | What it is                                         |
+| ----------------------------- | -------------------------------------------------- |
+| `CLAUDE.md`                   | Global rules + planning/review workflow            |
+| `settings.json`               | Permissions, hooks, enabled plugins, theme         |
+| `skills/`                     | 11 personal skills (also the plugin's skill set)   |
+| `agents/`                     | 10 `ns-*` subagents                                |
+| `commands/`                   | Slash commands                                     |
+| `.claude-plugin/marketplace.json` + `plugin.json` | Marketplace + plugin manifests |
+
+**Not tracked** (machine-specific, secret, or runtime): `settings.local.json`, `.env`,
+virtualenvs, generated `arcane-out/`, and `~/.claude`'s history/sessions/telemetry/caches.
+Third-party plugins (superpowers, evo, …) are *referenced* by `settings.json` and
+re-fetched from their marketplaces — not vendored here.
+
+## Set up a new device
 
 ```bash
-python3 -m venv .venv
-.venv/bin/pip install -r requirements.txt
+git clone git@github.com:puspesh/oh-my-claude.git ~/Code/oh-my-claude
+cd ~/Code/oh-my-claude
 ```
 
-Set API keys (read from a `.env` walked up from the current directory, or the
-environment):
+Then pick **one** mode:
 
-- `GEMINI_API_KEY` (or `GOOGLE_API_KEY`) — for the default Gemini provider
-- `OPENAI_API_KEY` — for `--provider openai`
+### Copy mode (default) — bare skill names
 
-## Usage
+Skills become user-level: invoked as `/caveman`, `/clean-code`, etc.
 
 ```bash
-# Dry run (default) — prints state + estimated cost, spends nothing:
-.venv/bin/python tools/arcane.py "a lone fox in a misty forest" --style editorial-illustration
-
-# Generate for real (requires --generate):
-.venv/bin/python tools/arcane.py "a lone fox in a misty forest" --style editorial-illustration --generate --open
-
-# Free-form style instead of a preset:
-.venv/bin/python tools/arcane.py "app icon, a compass" --style-text "flat vector, two flat colors" --provider openai --generate
-
-# List available style presets:
-.venv/bin/python tools/arcane.py --list-styles
+./install.sh            # or ./install.sh --dry to preview
 ```
 
-Output: `arcane-out/<name>.webp` plus `arcane-out/manifest.json` in the current
-directory (override with `--out-dir`). `<name>` defaults to a slug of the prompt plus a
-short hash; override with `--name`.
+The `arcane-claude-arts` skill needs a venv afterward:
 
-## Cost safety
+```bash
+cd ~/.claude/skills/arcane-claude-arts
+python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
+```
 
-- **Dry run by default.** Nothing is generated (and nothing is charged) without
-  `--generate`.
-- `--max-cost` (default `1.00`) aborts *before* any API call if the estimate exceeds it.
-- **Caching.** An identical prompt+style+provider+size is hashed; a re-run reports
-  `CACHED` and spends nothing. Editing the prompt or style re-generates (`CHANGED`).
+### Plugin mode — namespaced skill names
 
-Per-image prices (verified Jun 2026): Gemini ~$0.067; OpenAI GPT Image 2 ~$0.006 (low)
-/ $0.053 (medium) / $0.211 (high).
+Skills come from the marketplace plugin: invoked as `/oh-my-claude:caveman`.
 
-## Styles
+```bash
+./install.sh --plugin   # copies CLAUDE.md + settings.json, enables the plugin,
+                        # does NOT copy skills/agents/commands
+```
 
-Presets are plain text files in `styles/`. Add a `styles/<name>.txt` and select it with
-`--style <name>`. A one-off look can be passed inline with `--style-text "..."`.
+`install.sh --plugin` registers the marketplace and enables the plugin in
+`settings.json`; on next launch Claude fetches it from GitHub. To use the plugin
+without a GitHub push (e.g. local testing), add the marketplace by path inside Claude:
+
+```
+/plugin marketplace add ~/Code/oh-my-claude
+/plugin install oh-my-claude@oh-my-claude
+```
+
+## Push local changes back into the repo
+
+`install.sh` is copy-based, so the live config can drift. After editing anything under
+`~/.claude` (directly or via Claude), pull it back and commit:
+
+```bash
+./sync-from-claude.sh
+git add -A && git commit -m "sync claude config"
+git push
+```
+
+`sync-from-claude.sh` is the reverse of copy-mode install and applies the same
+exclusions (no secrets, venvs, or generated output). It does not touch the
+`.claude-plugin/` manifests.
+
+## Renaming the GitHub repo
+
+The GitHub remote is still `puspesh/arcane-claude-arts`. The marketplace manifest and
+`settings.json` already target `puspesh/oh-my-claude`. When you rename on GitHub:
+
+```bash
+git remote set-url origin git@github.com:puspesh/oh-my-claude.git
+```
+
+## Credits
+
+These skills are sourced from [mattpocock/skills](https://github.com/mattpocock/skills)
+(MIT): `grill-me`, `grill-with-docs`, `grilling`, `teach`, `tdd`, `domain-modeling`,
+`codebase-design`. Several are dependencies of others: `grill-me` and `grill-with-docs`
+invoke `/grilling`; `grill-with-docs` also invokes `/domain-modeling`; `tdd` references
+`/codebase-design`.
